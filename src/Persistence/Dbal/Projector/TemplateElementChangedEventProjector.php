@@ -10,17 +10,18 @@ declare(strict_types = 1);
 namespace Ergonode\Designer\Persistence\Dbal\Projector;
 
 use Doctrine\DBAL\Connection;
+use Ergonode\Designer\Domain\Event\TemplateElementChangedEvent;
 use Ergonode\EventSourcing\Infrastructure\Exception\UnsupportedEventException;
 use Ergonode\Core\Domain\Entity\AbstractId;
 use Ergonode\EventSourcing\Infrastructure\DomainEventInterface;
 use Ergonode\EventSourcing\Infrastructure\Projector\DomainEventProjectorInterface;
-use Ergonode\Designer\Domain\Event\TemplateSectionChangedEvent;
+use JMS\Serializer\SerializerInterface;
 
 /**
  */
-class TemplateSectionChangedEventProjector implements DomainEventProjectorInterface
+class TemplateElementChangedEventProjector implements DomainEventProjectorInterface
 {
-    private const SECTION_TABLE = 'designer.template_section';
+    private const ELEMENT_TABLE = 'designer.template_element';
 
     /**
      * @var Connection
@@ -28,13 +29,18 @@ class TemplateSectionChangedEventProjector implements DomainEventProjectorInterf
     private $connection;
 
     /**
-     * TemplateCreateEventProjector constructor.
-     *
-     * @param Connection $connection
+     * @var SerializerInterface
      */
-    public function __construct(Connection $connection)
+    private $serializer;
+
+    /**
+     * @param Connection          $connection
+     * @param SerializerInterface $serializer
+     */
+    public function __construct(Connection $connection, SerializerInterface $serializer)
     {
         $this->connection = $connection;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -44,7 +50,7 @@ class TemplateSectionChangedEventProjector implements DomainEventProjectorInterf
      */
     public function support(DomainEventInterface $event): bool
     {
-        return $event instanceof TemplateSectionChangedEvent;
+        return $event instanceof TemplateElementChangedEvent;
     }
 
     /**
@@ -58,20 +64,24 @@ class TemplateSectionChangedEventProjector implements DomainEventProjectorInterf
     public function projection(AbstractId $aggregateId, DomainEventInterface $event): void
     {
 
-        if (!$event instanceof TemplateSectionChangedEvent) {
-            throw new UnsupportedEventException($event, TemplateSectionChangedEvent::class);
+        if (!$event instanceof TemplateElementChangedEvent) {
+            throw new UnsupportedEventException($event, TemplateElementChangedEvent::class);
         }
 
         $this->connection->beginTransaction();
         try {
+            $element = $event->getElement();
             $this->connection->update(
-                self::SECTION_TABLE,
+                self::ELEMENT_TABLE,
                 [
-                    'title' => $event->getTo(),
+                    'width' => $element->getSize()->getWidth(),
+                    'height' => $element->getSize()->getHeight(),
+                    'properties' => $this->serializer->serialize($element->getProperties(), 'json'),
                 ],
                 [
                     'template_id' => $aggregateId->getValue(),
-                    'row' => $event->getRow(),
+                    'x' => $element->getPosition()->getX(),
+                    'y' => $element->getPosition()->getY(),
                 ]
             );
             $this->connection->commit();
