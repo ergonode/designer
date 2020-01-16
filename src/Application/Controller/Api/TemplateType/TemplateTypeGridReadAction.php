@@ -7,49 +7,55 @@
 
 declare(strict_types = 1);
 
-namespace Ergonode\Designer\Application\Controller\Api;
+namespace Ergonode\Designer\Application\Controller\Api\TemplateType;
 
+use Ergonode\Api\Application\Response\SuccessResponse;
 use Ergonode\Core\Domain\ValueObject\Language;
-use Ergonode\Designer\Domain\Query\TemplateGroupQueryInterface;
-use Ergonode\Designer\Infrastructure\Grid\TemplateGroupGrid;
+use Ergonode\Designer\Domain\Query\TemplateElementQueryInterface;
+use Ergonode\Designer\Infrastructure\Grid\TemplateTypeDictionaryGrid;
+use Ergonode\Grid\Renderer\GridRenderer;
 use Ergonode\Grid\RequestGridConfiguration;
-use Ergonode\Grid\Response\GridResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
+ * @Route("/templates/types", methods={"GET"})
  */
-class TemplateGroupController extends AbstractController
+class TemplateTypeGridReadAction
 {
     /**
-     * @var TemplateGroupQueryInterface
+     * @var TemplateElementQueryInterface
      */
     private $query;
 
     /**
-     * @var TemplateGroupGrid
+     * @var TemplateTypeDictionaryGrid
      */
     private $grid;
 
     /**
-     * @param TemplateGroupQueryInterface $query
-     * @param TemplateGroupGrid           $grid
+     * @var GridRenderer
      */
-    public function __construct(TemplateGroupQueryInterface $query, TemplateGroupGrid $grid)
-    {
+    private $gridRenderer;
+
+    /**
+     * @param GridRenderer                  $gridRenderer
+     * @param TemplateElementQueryInterface $query
+     * @param TemplateTypeDictionaryGrid    $grid
+     */
+    public function __construct(
+        GridRenderer $gridRenderer,
+        TemplateElementQueryInterface $query,
+        TemplateTypeDictionaryGrid $grid
+    ) {
         $this->query = $query;
         $this->grid = $grid;
+        $this->gridRenderer = $gridRenderer;
     }
 
     /**
-     * @Route("/templates/groups", methods={"GET"})
-     *
-     * @IsGranted("TEMPLATE_DESIGNER_READ")
-     *
      * @SWG\Tag(name="Designer")
      * @SWG\Parameter(
      *     name="limit",
@@ -90,13 +96,13 @@ class TemplateGroupController extends AbstractController
      *     type="string",
      *     description="Filter"
      * )
-     * @SWG\Parameter(
-     *     name="show",
+    * @SWG\Parameter(
+     *     name="view",
      *     in="query",
      *     required=false,
      *     type="string",
-     *     enum={"COLUMN","DATA"},
-     *     description="Specify what response should containts"
+     *     enum={"grid","list"},
+     *     description="Specify respons format"
      * )
      * @SWG\Parameter(
      *     name="language",
@@ -108,7 +114,7 @@ class TemplateGroupController extends AbstractController
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Returns list of designer template groups",
+     *     description="Returns list of designer template types",
      * )
      *
      * @ParamConverter(class="Ergonode\Grid\RequestGridConfiguration")
@@ -118,10 +124,17 @@ class TemplateGroupController extends AbstractController
      *
      * @return Response
      */
-    public function getGroups(Language $language, RequestGridConfiguration $configuration): Response
+    public function __invoke(Language $language, RequestGridConfiguration $configuration): Response
     {
         $dataSet = $this->query->getDataSet();
 
-        return new GridResponse($this->grid, $configuration, $dataSet, $language);
+        $data = $this->gridRenderer->render(
+            $this->grid,
+            $configuration,
+            $dataSet,
+            $language
+        );
+
+        return new SuccessResponse($data);
     }
 }
