@@ -10,13 +10,13 @@ declare(strict_types = 1);
 namespace Ergonode\Designer\Domain\Event;
 
 use Ergonode\EventSourcing\Infrastructure\DomainEventInterface;
-use Ergonode\SharedKernel\Domain\Aggregate\TemplateGroupId;
+use Ergonode\SharedKernel\Domain\Aggregate\AttributeId;
 use Ergonode\SharedKernel\Domain\Aggregate\TemplateId;
 use JMS\Serializer\Annotation as JMS;
 
 /**
  */
-class TemplateGroupChangedEvent implements DomainEventInterface
+class TemplateDefaultTextChangedEvent implements DomainEventInterface
 {
     /**
      * @var TemplateId
@@ -26,31 +26,32 @@ class TemplateGroupChangedEvent implements DomainEventInterface
     private TemplateId $id;
 
     /**
-     * @var TemplateGroupId
+     * @var AttributeId
      *
-     * @JMS\Type("Ergonode\SharedKernel\Domain\Aggregate\TemplateGroupId")
+     * @JMS\Type("Ergonode\SharedKernel\Domain\Aggregate\AttributeId")
      */
-    private TemplateGroupId $from;
+    private AttributeId $from;
 
     /**
-     * @var TemplateGroupId
+     * @var AttributeId
      *
-     * @JMS\Type("Ergonode\SharedKernel\Domain\Aggregate\TemplateGroupId")
+     * @JMS\Type("Ergonode\SharedKernel\Domain\Aggregate\AttributeId")
      */
-    private TemplateGroupId $to;
+    private AttributeId $to;
 
     /**
-     * @param TemplateId      $id
-     * @param TemplateGroupId $from
-     * @param TemplateGroupId $to
+     * TemplateDefaultTextChangedEvent constructor.
+     *
+     * @param TemplateId  $id
+     * @param AttributeId $from
+     * @param AttributeId $to
      */
-    public function __construct(TemplateId $id, TemplateGroupId $from, TemplateGroupId $to)
+    public function __construct(TemplateId $id, AttributeId $from, AttributeId $to)
     {
         $this->id = $id;
         $this->from = $from;
         $this->to = $to;
     }
-
     /**
      * @return TemplateId
      */
@@ -60,17 +61,17 @@ class TemplateGroupChangedEvent implements DomainEventInterface
     }
 
     /**
-     * @return TemplateGroupId
+     * @return AttributeId
      */
-    public function getOld(): TemplateGroupId
+    public function getFrom(): AttributeId
     {
         return $this->from;
     }
 
     /**
-     * @return TemplateGroupId
+     * @return AttributeId
      */
-    public function getNew(): TemplateGroupId
+    public function getTo(): AttributeId
     {
         return $this->to;
     }
