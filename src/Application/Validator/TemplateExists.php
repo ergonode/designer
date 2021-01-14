@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Ergonode\Designer\Infrastructure\Validator;
+namespace Ergonode\Designer\Application\Validator;
 
 use Symfony\Component\Validator\Constraint;
 
@@ -16,5 +16,5 @@ use Symfony\Component\Validator\Constraint;
  */
 class TemplateExists extends Constraint
 {
-    public string $message = 'Template {{ value }} doesn\'t exists';
+    public string $message = 'Template doesn\'t exists';
 }
