@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Ergonode\Designer\Tests\Infrastructure\Validator;
+namespace Ergonode\Designer\Tests\Application\Validator;
 
 use Ergonode\Designer\Domain\Entity\Template;
 use Ergonode\Designer\Domain\Repository\TemplateRepositoryInterface;
-use Ergonode\Designer\Infrastructure\Validator\TemplateExists;
-use Ergonode\Designer\Infrastructure\Validator\TemplateExistsValidator;
+use Ergonode\Designer\Application\Validator\TemplateExists;
+use Ergonode\Designer\Application\Validator\TemplateExistsValidator;
 use Ergonode\SharedKernel\Domain\Aggregate\TemplateId;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\Constraint;
@@ -52,7 +52,7 @@ class TemplateExistsValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function testStatusNotValidValidation(): void
+    public function testTemplateNotValidValidation(): void
     {
         $this->templateRepository->method('load')->willReturn($this->createMock(Template::class));
         $constraint = new TemplateExists();
@@ -63,7 +63,7 @@ class TemplateExistsValidatorTest extends ConstraintValidatorTestCase
         $assertion->assertRaised();
     }
 
-    public function testStatusExistsValidation(): void
+    public function testTemplateExistsValidation(): void
     {
         $this->templateRepository->method('load')->willReturn($this->createMock(Template::class));
         $this->validator->validate(TemplateId::generate(), new TemplateExists());
@@ -71,7 +71,7 @@ class TemplateExistsValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function testTemplateExistsValidation(): void
+    public function testNotTemplateExistsValidation(): void
     {
         $this->templateRepository->method('load')->willReturn(null);
         $constraint = new TemplateExists();
